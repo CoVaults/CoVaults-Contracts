@@ -78,7 +78,11 @@
     (begin
         ;; Verify contract is initialized
         (asserts! (var-get initialized) ERR_NOT_INITIALIZED)
-        (ok u0)
+        ;; Verify caller is a signer
+        (let ((caller tx-sender))
+            (asserts! (is-some (index-of (var-get signers) caller)) ERR_NOT_SIGNER)
+            (ok u0)
+        )
     )
 )
 
