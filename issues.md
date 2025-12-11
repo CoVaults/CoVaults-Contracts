@@ -21,10 +21,10 @@ The multisig frontend follows this workflow:
   - Set up Tailwind CSS
   - Configure path aliases
 
-- [ ] **Issue #20**: Install and configure Stacks dependencies
-  - Install @stacks/connect
-  - Install @stacks/transactions
-  - Configure wallet connection
+- [x] **Issue #20**: Install and configure Stacks dependencies
+  - ✅ Install @stacks/connect (v7.2.0)
+  - ✅ Install @stacks/transactions (v7.2.0)
+  - [ ] Configure wallet connection
 
 - [ ] **Issue #21**: Set up project structure
   - Create component directories

@@ -1,6 +1,28 @@
-# Stacks Multisig Vaults
+# Frontend - Stacks Multisig Vaults
 
-A decentralized multi-signature vault system built on Stacks, enabling secure multi-party control over STX and SIP-010 tokens (like sBTC).
+A Next.js frontend application for the Stacks Multisig Vaults system, enabling secure multi-party control over STX and SIP-010 tokens (like sBTC).
+
+## Dependencies
+
+### Stacks Packages
+
+- **`@stacks/connect`** (v7.2.0) - Wallet connection and authentication
+  - Used for connecting user wallets (Leather, Xverse)
+  - Handles user authentication and session management
+  - Provides wallet connection UI components
+
+- **`@stacks/transactions`** (v7.2.0) - Transaction building and signing
+  - Used for building contract call transactions
+  - Provides `signMessageHashRsv` for off-chain transaction signing
+  - Helper functions for creating Clarity values (`Cl`)
+  - Transaction serialization and signing utilities
+
+### Core Packages
+
+- **Next.js** (v16.0.8) - React framework with App Router
+- **React** (v19.2.1) - UI library
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling
 
 ## Overview
 
