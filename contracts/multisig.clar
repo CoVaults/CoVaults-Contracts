@@ -72,7 +72,7 @@
     (signers-list (list 100 principal))
     (threshold-value uint)
 )
-    (response bool uint)
+    (response uint uint)
     (begin
         ;; Verify contract owner
         (asserts! (is-eq tx-sender CONTRACT_OWNER) ERR_OWNER_ONLY)
