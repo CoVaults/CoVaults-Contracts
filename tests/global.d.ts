@@ -1,10 +1,9 @@
-/// <reference types="vitest" />
-/// <reference types="@stacks/clarinet-sdk/vitest-helpers" />
+/// <reference types="vitest/globals" />
 
-import { Simnet } from "@stacks/clarinet-sdk";
+import type { Simnet } from "@stacks/clarinet-sdk";
 
 declare global {
-  const simnet: Simnet;
+  var simnet: Simnet;
   
   namespace Vi {
     interface Assertion<T = any> {
