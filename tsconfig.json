@@ -19,8 +19,10 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": [
-    "node_modules/@hirosystems/clarinet-sdk/vitest-helpers/src",
-    "tests"
-  ]
+    "node_modules/@stacks/clarinet-sdk/vitest-helpers/src",
+    "tests/**/*",
+    "vitest.config.js"
+  ],
+  "types": ["vitest/globals", "node"]
 }
 
