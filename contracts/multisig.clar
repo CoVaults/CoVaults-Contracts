@@ -90,7 +90,18 @@
                 (asserts! (is-some token) ERR_INVALID_TOKEN)
                 true
             )
-            (ok u0)
+            ;; Get current txn-id from storage
+            (let ((current-id (var-get txn-id)))
+                ;; Store transaction in transactions map
+                (map-set transactions current-id {
+                    type: txn-type,
+                    amount: amount,
+                    recipient: recipient,
+                    token: token,
+                    executed: false
+                })
+                (ok current-id)
+            )
         )
     )
 )
