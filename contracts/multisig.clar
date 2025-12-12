@@ -136,11 +136,30 @@
 )
 
 ;; Issue #3: Hash a stored transaction for signature verification
-(define-read-only (hash-txn (txn-id uint))
+(define-read-only (hash-txn (target-id uint))
     (let (
-        (txn (unwrap! (map-get? transactions txn-id) ERR_INVALID_TXN_ID))
+        (txn (unwrap! (map-get? transactions target-id) ERR_INVALID_TXN_ID))
         (txn-buff (unwrap! (to-consensus-buff? txn) ERR_INVALID_TXN_ID))
     )
         (ok (sha256 txn-buff))
+    )
+)
+
+;; Issue #4: Extract and verify signer from signature
+(define-read-only (extract-signer
+    (message-hash (buff 32))
+    (signature (buff 65))
+)
+    (match (secp256k1-recover? message-hash signature)
+        pubkey
+            (match (principal-of? pubkey)
+                signer
+                    (if (is-some (index-of (var-get signers) signer))
+                        (ok signer)
+                        ERR_INVALID_SIGNATURE
+                    )
+                none ERR_INVALID_SIGNATURE
+            )
+        err-code ERR_INVALID_SIGNATURE
     )
 )
