@@ -48,7 +48,7 @@ This project will leverage Clarity 4 features for enhanced security and function
   - Hash the buffer using `sha256` function
   - Return the 32-byte hash buffer
 
-- [ ] **Issue #4**: Implement `extract-signer` read-only function
+- [x] **Issue #4**: Implement `extract-signer` read-only function
   - Take message hash (buff 32) and signature (buff 65) as parameters
   - Recover public key from signature using `secp256k1-recover?` with message hash and signature
   - Convert public key to principal using `principal-of?`
