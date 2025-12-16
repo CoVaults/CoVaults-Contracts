@@ -15,6 +15,12 @@ clarity_version = 2
 # Clarity 2 is well-tested for multisig patterns
 epoch = '2.4'
 
+[contracts.mock-token]
+path = 'contracts/mock-token.clar'
+clarity_version = 2
+# Mock SIP-010 token for testing
+epoch = '2.4'
+
 [repl.analysis]
 passes = ['check_checker']
 
