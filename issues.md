@@ -182,13 +182,13 @@ This project will leverage Clarity 4 features for enhanced security and function
 
 ### Security & Edge Cases
 
-- [ ] **Issue #14**: Add reentrancy protection
-- [ ] **Issue #15**: Add transaction expiration mechanism
+- [ ] **Issue #14**: ❌ PENDING - Add reentrancy protection
+- [ ] **Issue #15**: ❌ PENDING - Add transaction expiration mechanism
   - Add `expiration` field to `transactions` map (uint timestamp)
   - Update `submit-txn` to accept optional expiration parameter (default: 7 days)
   - Add expiration check in execution functions (`execute-stx-transfer-txn`, `execute-token-transfer-txn`)
   - Add error constant: `ERR_TXN_EXPIRED`
   - **Clarity 4**: Use `stacks-block-time` to get current block timestamp (see CLARITY4-IMPLEMENTATION-PLAN.md)
-- [ ] **Issue #16**: Add ability to cancel pending transactions
-- [ ] **Issue #17**: Add signer management (add/remove signers)
-- [ ] **Issue #18**: Add threshold update functionality
+- [ ] **Issue #16**: ❌ PENDING - Add ability to cancel pending transactions
+- [ ] **Issue #17**: ❌ PENDING - Add signer management (add/remove signers)
+- [ ] **Issue #18**: ❌ PENDING - Add threshold update functionality
