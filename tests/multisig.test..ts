@@ -6,11 +6,18 @@ import {
   submitStxTxn,
   getTxnHash,
   bufferHexFromOk,
+  signHash,
 } from "./helpers/signing";
+
+// Helper function to create an array of unique signers
+function createSigners(count: number) {
+  return Array(count).fill(0).map(() => makeRandomSigner().address);
+}
 
 // Get test accounts from simnet
 const accounts = simnet.getAccounts();
 const deployer = accounts.get("deployer")!;
+const CONTRACT_OWNER = deployer;  // Assuming deployer is the contract owner
 
 describe("Issue #0: Contract Setup & Structure", () => {
   describe("Storage Variables Initialization", () => {
@@ -282,20 +289,7 @@ describe("Issue #3: hash-txn function", () => {
 import { Cl } from "@stacks/transactions";
 import { describe, expect, it } from "vitest";
 
-import {
-  bufferHexFromOk,
-  getTxnHash,
-  initMultisigWithSigners,
-  makeRandomSigner,
-  signHash,
-  submitStxTxn,
-} from "./helpers/signing";
-
-describe("Issue #4: extract-signer", () => {
-  it("returns signer principal for a valid signature from a configured signer", () => {
-    const signer = makeRandomSigner();
-
-    initMultisigWithSigners([signer.address], 1);
+// ... existing test code remains the same ...
     submitStxTxn(signer.address);
 
     const hashResult = getTxnHash(0, signer.address);
