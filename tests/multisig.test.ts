@@ -91,12 +91,12 @@ describe("Issue #2: submit-txn function", () => {
   it("should reject transaction submission from non-signer", () => {
     const amount = 1000;
     const result = submitStxTxn(nonSigner.address, amount);
-    expect(result.result).not.toBeOk();
+    expect(result.result.type).toBe("err");
   });
 
   it("should reject transaction with zero amount", () => {
     const result = submitStxTxn(signer1.address, 0);
-    expect(result.result).not.toBeOk();
+    expect(result.result.type).toBe("err");
   });
 
   it("should store multiple transactions with sequential IDs", () => {
@@ -148,7 +148,7 @@ describe("Issue #3: hash-txn function", () => {
 
   it("should return error for non-existent transaction", () => {
     const result = getTxnHash(999, signer1.address);
-    expect(result.result).not.toBeOk();
+    expect(result.result.type).toBe("err");
   });
 });
 
