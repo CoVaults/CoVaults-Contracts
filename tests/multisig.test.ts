@@ -404,6 +404,18 @@ describe("Issue #11: STX Transfer Execution Tests", () => {
      const executeResult = executeStxTransfer(0, [sig1, sig2], signer1.address);
      expect(executeResult.result).toBeErr(Cl.uint(14)); // ERR_STX_TRANSFER_FAILED
   });
+
+  it("should fail execution if transaction type is not STX (0)", () => {
+    // Submit a token transaction (Type 1)
+    submitTokenTxn(signer1.address, "mock-token", 1000); 
+    const hashHex = bufferHexFromOk(getTxnHash(0, signer1.address));
+    const sig1 = signHash(hashHex, signer1.privateKey);
+    const sig2 = signHash(hashHex, signer2.privateKey);
+    
+    // Try to execute as STX transfer
+    const executeResult = executeStxTransfer(0, [sig1, sig2], signer1.address);
+    expect(executeResult.result).toBeErr(Cl.uint(8)); // ERR_INVALID_TXN_TYPE
+  });
 });
 
 describe("Issue #12: SIP-010 Transfer Execution Tests", () => {
