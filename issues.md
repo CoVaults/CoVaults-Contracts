@@ -145,7 +145,7 @@ This project will leverage Clarity 4 features for enhanced security and function
   - Test duplicate signature detection (same signer cannot sign twice)
   - Test signature verification works with `signMessageHashRsv` from @stacks/transactions
 
-- [ ] **Issue #11**: ❌ PENDING - Write STX transfer execution tests
+- [x] **Issue #11**: Write STX transfer execution tests
   - Test successful execution with threshold signatures (e.g., 2/3 multisig with 2 signatures)
   - Test full end-to-end flow: submit → sign off-chain → execute
   - Test execution fails with insufficient signatures (below threshold)
