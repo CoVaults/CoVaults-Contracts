@@ -40,17 +40,17 @@ plan:
             emulated-sender: SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE
             path: "./.cache/requirements/SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard.clar"
             clarity-version: 1
-      epoch: "2.1"
+      epoch: "2.0"
     - id: 1
       transactions:
         - emulated-contract-publish:
-            contract-name: mock-token
+            contract-name: stacksfort-multisig
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/mock-token.clar
+            path: contracts/stacksfort-multisig.clar
             clarity-version: 2
         - emulated-contract-publish:
-            contract-name: multisig
+            contract-name: stacksfort-token
             emulated-sender: ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM
-            path: contracts/multisig.clar
+            path: contracts/stacksfort-token.clar
             clarity-version: 2
       epoch: "2.4"

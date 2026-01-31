@@ -24,22 +24,22 @@ const deployer = accounts.get("deployer")!;
 describe("Issue #0: Contract Setup & Structure", () => {
   describe("Storage Variables Initialization", () => {
     it("should initialize 'initialized' variable to false", () => {
-      const initialized = simnet.getDataVar("multisig", "initialized");
+      const initialized = simnet.getDataVar("stacksfort-multisig", "initialized");
       expect(initialized).toBeBool(false);
     });
 
     it("should initialize 'signers' variable to empty list", () => {
-      const signers = simnet.getDataVar("multisig", "signers");
+      const signers = simnet.getDataVar("stacksfort-multisig", "signers");
       expect(signers).toBeList([]);
     });
 
     it("should initialize 'threshold' variable to 0", () => {
-      const threshold = simnet.getDataVar("multisig", "threshold");
+      const threshold = simnet.getDataVar("stacksfort-multisig", "threshold");
       expect(threshold).toBeUint(0);
     });
 
     it("should initialize 'txn-id' variable to 0", () => {
-      const txnId = simnet.getDataVar("multisig", "txn-id");
+      const txnId = simnet.getDataVar("stacksfort-multisig", "txn-id");
       expect(txnId).toBeUint(0);
     });
   });
@@ -47,14 +47,14 @@ describe("Issue #0: Contract Setup & Structure", () => {
   describe("Maps Definition", () => {
     it("should have 'transactions' map defined", () => {
       expect(() => {
-        simnet.getMapEntry("multisig", "transactions", Cl.uint(0));
+        simnet.getMapEntry("stacksfort-multisig", "transactions", Cl.uint(0));
       }).toThrow("value not found");
     });
 
     it("should have 'txn-signers' map defined", () => {
       expect(() => {
         simnet.getMapEntry(
-          "multisig",
+          "stacksfort-multisig",
           "txn-signers",
           Cl.tuple({
             "txn-id": Cl.uint(0),
@@ -77,11 +77,12 @@ describe("Issue #2: submit-txn function", () => {
 
   it("should allow a signer to submit an STX transaction", () => {
     const amount = 1000;
-    const result = submitStxTxn(signer1.address, amount);
+    const expiration = 2000;
+    const result = submitStxTxn(signer1.address, amount, expiration);
 
     expect(result.result).toBeOk(Cl.uint(0));
 
-    const txnResult = simnet.getMapEntry("multisig", "transactions", Cl.uint(0));
+    const txnResult = simnet.getMapEntry("stacksfort-multisig", "transactions", Cl.uint(0));
     expect(txnResult).toBeSome(
       Cl.tuple({
         type: Cl.uint(0),
@@ -89,10 +90,13 @@ describe("Issue #2: submit-txn function", () => {
         recipient: Cl.principal(signer1.address), // submitStxTxn uses sender as recipient
         token: Cl.none(),
         executed: Cl.bool(false),
+        expiration: Cl.uint(expiration),
+        "new-signers": Cl.none(),
+        "new-threshold": Cl.none(),
       })
     );
 
-    const txnId = simnet.getDataVar("multisig", "txn-id");
+    const txnId = simnet.getDataVar("stacksfort-multisig", "txn-id");
     expect(txnId).toBeUint(1);
   });
 
@@ -114,14 +118,14 @@ describe("Issue #2: submit-txn function", () => {
     const result2 = submitStxTxn(signer1.address, 500);
     expect(result2.result).toBeOk(Cl.uint(1));
 
-    const txn0 = simnet.getMapEntry("multisig", "transactions", Cl.uint(0));
-    const txn1 = simnet.getMapEntry("multisig", "transactions", Cl.uint(1));
+    const txn0 = simnet.getMapEntry("stacksfort-multisig", "transactions", Cl.uint(0));
+    const txn1 = simnet.getMapEntry("stacksfort-multisig", "transactions", Cl.uint(1));
 
     expect(txn0).toBeDefined();
     expect(txn1).toBeDefined();
     expect(txn0).not.toEqual(txn1);
 
-    const txnId = simnet.getDataVar("multisig", "txn-id");
+    const txnId = simnet.getDataVar("stacksfort-multisig", "txn-id");
     expect(txnId).toBeUint(2);
   });
 });
@@ -172,7 +176,7 @@ describe("Issue #4: extract-signer function", () => {
     const signature = signHash(hashHex, signer.privateKey);
 
     const extractResult = simnet.callReadOnlyFn(
-      "multisig",
+      "stacksfort-multisig",
       "extract-signer",
       [Cl.bufferFromHex(hashHex), Cl.bufferFromHex(signature)],
       signer.address
@@ -193,13 +197,13 @@ describe("Issue #4: extract-signer function", () => {
     const outsiderSig = signHash(hashHex, outsider.privateKey);
 
     const extractResult = simnet.callReadOnlyFn(
-      "multisig",
+      "stacksfort-multisig",
       "extract-signer",
       [Cl.bufferFromHex(hashHex), Cl.bufferFromHex(outsiderSig)],
       signer.address
     );
 
-    expect(extractResult.result).toBeErr(Cl.uint(12));
+    expect(extractResult.result).toBeErr(Cl.uint(501));
   });
 
   it("rejects malformed signatures that cannot be recovered", () => {
@@ -213,13 +217,13 @@ describe("Issue #4: extract-signer function", () => {
     const badSignature = "00".repeat(65);
 
     const extractResult = simnet.callReadOnlyFn(
-      "multisig",
+      "stacksfort-multisig",
       "extract-signer",
       [Cl.bufferFromHex(hashHex), Cl.bufferFromHex(badSignature)],
       signer.address
     );
 
-    expect(extractResult.result).toBeErr(Cl.uint(12));
+    expect(extractResult.result).toBeErr(Cl.uint(501));
   });
 });
 
@@ -286,7 +290,7 @@ describe("Issue #10: Signature Verification Tests", () => {
     
     // Verify this signature works with extract-signer
     const extractResult = simnet.callReadOnlyFn(
-      "multisig",
+      "stacksfort-multisig",
       "extract-signer",
       [Cl.bufferFromHex(hashHex), Cl.bufferFromHex(sig)],
       signer1.address
@@ -307,8 +311,9 @@ describe("Issue #11: STX Transfer Execution Tests", () => {
 
   it("should execute STX transfer with sufficient signatures", () => {
     const amount = 1000;
+    const expiration = 2000;
     // 1. Submit transaction
-    submitStxTxn(signer1.address, amount);
+    submitStxTxn(signer1.address, amount, expiration);
     
     // 2. Get hash
     const result = getTxnHash(0, signer1.address);
@@ -323,7 +328,7 @@ describe("Issue #11: STX Transfer Execution Tests", () => {
     expect(executeResult.result).toBeOk(Cl.bool(true));
     
     // 5. Verify executed flag
-    const txnResult = simnet.getMapEntry("multisig", "transactions", Cl.uint(0));
+    const txnResult = simnet.getMapEntry("stacksfort-multisig", "transactions", Cl.uint(0));
     expect(txnResult).toBeSome(
       Cl.tuple({
         type: Cl.uint(0),
@@ -331,13 +336,16 @@ describe("Issue #11: STX Transfer Execution Tests", () => {
         recipient: Cl.principal(signer1.address), // submitStxTxn uses sender as recipient
         token: Cl.none(),
         executed: Cl.bool(true),
+        expiration: Cl.uint(expiration),
+        "new-signers": Cl.none(),
+        "new-threshold": Cl.none(),
       })
     );
   });
 
   it("should update balances correctly after execution", () => {
     const amount = 2000;
-    const contractPrincipal = `${deployer}.multisig`;
+    const contractPrincipal = `${deployer}.stacksfort-multisig`;
     // const initialContractBalance = getStxBalance(contractPrincipal);
     
     submitStxTxn(signer1.address, amount);
@@ -364,7 +372,7 @@ describe("Issue #11: STX Transfer Execution Tests", () => {
     
     // Only 1 signature, threshold is 2
     const executeResult = executeStxTransfer(0, [sig1], signer1.address);
-    expect(executeResult.result).toBeErr(Cl.uint(11)); // ERR_INSUFFICIENT_SIGNATURES
+    expect(executeResult.result).toBeErr(Cl.uint(500)); // ERR_INSUFFICIENT_SIGNATURES
   });
 
   it("should fail execution with invalid signatures", () => {
@@ -375,7 +383,7 @@ describe("Issue #11: STX Transfer Execution Tests", () => {
     
     const executeResult = executeStxTransfer(0, [sig1, badSig], signer1.address);
     // 1 valid + 1 invalid = 1 valid count. Threshold is 2.
-    expect(executeResult.result).toBeErr(Cl.uint(11)); // ERR_INSUFFICIENT_SIGNATURES
+    expect(executeResult.result).toBeErr(Cl.uint(500)); // ERR_INSUFFICIENT_SIGNATURES
   });
 
   it("should fail if transaction already executed", () => {
@@ -389,7 +397,7 @@ describe("Issue #11: STX Transfer Execution Tests", () => {
     
     // Second execution
     const executeResult2 = executeStxTransfer(0, [sig1, sig2], signer1.address);
-    expect(executeResult2.result).toBeErr(Cl.uint(10)); // ERR_TXN_ALREADY_EXECUTED
+    expect(executeResult2.result).toBeErr(Cl.uint(400)); // ERR_TXN_ALREADY_EXECUTED
   });
   
   it("should fail if contract has insufficient STX balance", () => {
@@ -402,38 +410,39 @@ describe("Issue #11: STX Transfer Execution Tests", () => {
      const sig2 = signHash(hashHex, signer2.privateKey);
      
      const executeResult = executeStxTransfer(0, [sig1, sig2], signer1.address);
-     expect(executeResult.result).toBeErr(Cl.uint(14)); // ERR_STX_TRANSFER_FAILED
+     expect(executeResult.result).toBeErr(Cl.uint(502)); // ERR_STX_TRANSFER_FAILED
   });
 
   it("should fail execution if transaction type is not STX (0)", () => {
     // Submit a token transaction (Type 1)
-    submitTokenTxn(signer1.address, "mock-token", 1000); 
+    submitTokenTxn(signer1.address, "stacksfort-token", 1000); 
     const hashHex = bufferHexFromOk(getTxnHash(0, signer1.address));
     const sig1 = signHash(hashHex, signer1.privateKey);
     const sig2 = signHash(hashHex, signer2.privateKey);
     
     // Try to execute as STX transfer
     const executeResult = executeStxTransfer(0, [sig1, sig2], signer1.address);
-    expect(executeResult.result).toBeErr(Cl.uint(8)); // ERR_INVALID_TXN_TYPE
+    expect(executeResult.result).toBeErr(Cl.uint(301)); // ERR_INVALID_TXN_TYPE
   });
 });
 
 describe("Issue #12: SIP-010 Transfer Execution Tests", () => {
   const signer1 = makeRandomSigner();
   const signer2 = makeRandomSigner();
-  const tokenContract = "mock-token";
+  const tokenContract = "stacksfort-token";
 
   beforeEach(() => {
     initMultisigWithSigners([signer1.address, signer2.address], 2);
     // Mint 10,000 mock tokens to the multisig contract
-    const contractPrincipal = `${deployer}.multisig`;
+    const contractPrincipal = `${deployer}.stacksfort-multisig`;
     mintMockToken(tokenContract, contractPrincipal, 10000);
   });
 
   it("should execute SIP-010 transfer with sufficient signatures", () => {
     const amount = 1000;
+    const expiration = 2000;
     // 1. Submit transaction (Type 1)
-    submitTokenTxn(signer1.address, tokenContract, amount);
+    submitTokenTxn(signer1.address, tokenContract, amount, expiration);
     
     // 2. Get hash
     const result = getTxnHash(0, signer1.address);
@@ -444,7 +453,7 @@ describe("Issue #12: SIP-010 Transfer Execution Tests", () => {
     const sig2 = signHash(hashHex, signer2.privateKey);
     
     // 4. Verify initial balance
-    const contractPrincipal = `${deployer}.multisig`;
+    const contractPrincipal = `${deployer}.stacksfort-multisig`;
     const initialBalance = getTokenBalance(tokenContract, contractPrincipal);
     expect(initialBalance.result).toBeOk(Cl.uint(10000));
     
@@ -453,7 +462,7 @@ describe("Issue #12: SIP-010 Transfer Execution Tests", () => {
     expect(executeResult.result).toBeOk(Cl.bool(true));
     
     // 6. Verify executed flag
-    const txnResult = simnet.getMapEntry("multisig", "transactions", Cl.uint(0));
+    const txnResult = simnet.getMapEntry("stacksfort-multisig", "transactions", Cl.uint(0));
     expect(txnResult).toBeSome(
       Cl.tuple({
         type: Cl.uint(1), // Type 1 for token
@@ -461,6 +470,9 @@ describe("Issue #12: SIP-010 Transfer Execution Tests", () => {
         recipient: Cl.principal(signer1.address),
         token: Cl.some(Cl.contractPrincipal(deployer, tokenContract)),
         executed: Cl.bool(true),
+        expiration: Cl.uint(expiration),
+        "new-signers": Cl.none(),
+        "new-threshold": Cl.none(),
       })
     );
     
@@ -478,7 +490,7 @@ describe("Issue #12: SIP-010 Transfer Execution Tests", () => {
     const sig1 = signHash(hashHex, signer1.privateKey);
     
     const executeResult = executeTokenTransfer(0, [sig1], tokenContract, signer1.address);
-    expect(executeResult.result).toBeErr(Cl.uint(11)); // ERR_INSUFFICIENT_SIGNATURES
+    expect(executeResult.result).toBeErr(Cl.uint(500)); // ERR_INSUFFICIENT_SIGNATURES
   });
 
   it("should fail execution with wrong token contract", () => {
@@ -488,12 +500,12 @@ describe("Issue #12: SIP-010 Transfer Execution Tests", () => {
     const sig2 = signHash(hashHex, signer2.privateKey);
     
     // Try to execute with a different token contract (e.g. self)
-    // Here we just pass "multisig" as if it were a token checking logic
+    // Here we just pass "stacksfort-multisig" as if it were a token checking logic
     // The contract checks (contract-of token-contract) vs stored token
     // Stored: mock-token. Passed: multisig (or any random)
     
-    const executeResult = executeTokenTransfer(0, [sig1, sig2], "multisig", signer1.address);
-    expect(executeResult.result).toBeErr(Cl.uint(13)); // ERR_INVALID_TOKEN
+    const executeResult = executeTokenTransfer(0, [sig1, sig2], "stacksfort-multisig", signer1.address);
+    expect(executeResult.result).toBeErr(Cl.uint(303)); // ERR_INVALID_TOKEN
   });
 
   it("should fail execution if transaction type is not SIP-010 (1)", () => {
@@ -503,6 +515,76 @@ describe("Issue #12: SIP-010 Transfer Execution Tests", () => {
     const sig2 = signHash(hashHex, signer2.privateKey);
     
     const executeResult = executeTokenTransfer(0, [sig1, sig2], tokenContract, signer1.address);
-    expect(executeResult.result).toBeErr(Cl.uint(8)); // ERR_INVALID_TXN_TYPE
+    expect(executeResult.result).toBeErr(Cl.uint(301)); // ERR_INVALID_TXN_TYPE
+  });
+});
+
+describe("Issue #15: Transaction Expiration", () => {
+  const signer1 = makeRandomSigner();
+  const signer2 = makeRandomSigner();
+
+  beforeEach(() => {
+    initMultisigWithSigners([signer1.address, signer2.address], 2);
+    fundMultisigWithStx(10000);
+  });
+
+  it("should fail execution if transaction has expired", () => {
+    const amount = 1000;
+    // Set expiration to current block + 10
+    // We can't easily get current block in test setup cleanly without call, 
+    // but we know it's low. Let's use absolute block height u100.
+    const expiration = 100; 
+    
+    // 1. Submit transaction with explicit expiration
+    submitStxTxn(signer1.address, amount, expiration);
+    
+    // 2. Sign off-chain
+    const result = getTxnHash(0, signer1.address);
+    const hashHex = bufferHexFromOk(result);
+    const sig1 = signHash(hashHex, signer1.privateKey);
+    const sig2 = signHash(hashHex, signer2.privateKey);
+    
+    // 3. Advance chain to expire the transaction
+    // Mine 101 blocks to be sure we are past block 100
+    simnet.mineEmptyBlocks(101);
+    
+    // 4. Attempt to execute
+    const executeResult = executeStxTransfer(0, [sig1, sig2], signer1.address);
+    
+    // 5. Expect ERR_TX_EXPIRED (u401)
+    expect(executeResult.result).toBeErr(Cl.uint(401));
+  });
+
+  it("should execute successfully if transaction has not expired", () => {
+    const amount = 1000;
+    // Set expiration to current block + 100
+    const expiration = 200; 
+    
+    submitStxTxn(signer1.address, amount, expiration);
+    
+    const result = getTxnHash(0, signer1.address);
+    const hashHex = bufferHexFromOk(result);
+    const sig1 = signHash(hashHex, signer1.privateKey);
+    const sig2 = signHash(hashHex, signer2.privateKey);
+    
+    // Mine just a few blocks
+    simnet.mineEmptyBlocks(5);
+    
+    const executeResult = executeStxTransfer(0, [sig1, sig2], signer1.address);
+    expect(executeResult.result).toBeOk(Cl.bool(true));
+  });
+});
+
+describe("Issue #14: Reentrancy Protection", () => {
+  const signer1 = makeRandomSigner();
+  const signer2 = makeRandomSigner();
+
+  beforeEach(() => {
+    initMultisigWithSigners([signer1.address, signer2.address], 2);
+  });
+
+  it("should initialize reentrancy-lock to false", () => {
+    const lock = simnet.getDataVar("stacksfort-multisig", "reentrancy-lock");
+    expect(lock).toBeBool(false);
   });
 });

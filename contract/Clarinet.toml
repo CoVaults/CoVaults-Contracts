@@ -8,15 +8,15 @@ cache_dir = './.cache'
 [[project.requirements]]
 contract_id = 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard'
 
-[contracts.multisig]
-path = 'contracts/multisig.clar'
+[contracts.stacksfort-multisig]
+path = 'contracts/stacksfort-multisig.clar'
 clarity_version = 2
 # Using Clarity 2 for stable multisig support with as-contract
 # Clarity 2 is well-tested for multisig patterns
 epoch = '2.4'
 
-[contracts.mock-token]
-path = 'contracts/mock-token.clar'
+[contracts.stacksfort-token]
+path = 'contracts/stacksfort-token.clar'
 clarity_version = 2
 # Mock SIP-010 token for testing
 epoch = '2.4'

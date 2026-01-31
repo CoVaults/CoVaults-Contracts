@@ -9,10 +9,17 @@ plan:
     - id: 0
       transactions:
         - contract-publish:
-            contract-name: stacksfort-v1
+            contract-name: stacksfort-multisig
             expected-sender: SP3TXKY0REKG6P3W6ACFB615N5556EC8VYS4MFA4D
-            cost: 745305
-            path: contracts/multisig.clar
+            cost: 218110
+            path: contracts/stacksfort-multisig.clar
             anchor-block-only: true
-            clarity-version: 4
-      epoch: "3.3"
+            clarity-version: 2
+        - contract-publish:
+            contract-name: stacksfort-token
+            expected-sender: SP3TXKY0REKG6P3W6ACFB615N5556EC8VYS4MFA4D
+            cost: 18560
+            path: contracts/stacksfort-token.clar
+            anchor-block-only: true
+            clarity-version: 2
+      epoch: "2.4"

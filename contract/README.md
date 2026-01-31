@@ -39,7 +39,7 @@ This contract will leverage Clarity 4 features for enhanced security and functio
 ```
 smart-contract/
 ├── contracts/                    # Clarity smart contract files (.clar)
-│   └── multisig.clar            # Main multisig contract
+│   └── stacksfort-multisig.clar            # Main multisig contract
 ├── tests/                        # Test files (.test.ts)
 │   └── 00-contract-setup.test.ts
 ├── settings/                     # Configuration files for different networks
@@ -112,8 +112,9 @@ npm run test
 
 ### Mainnet Deployed Contracts
 
-The following contracts are deployed on Stacks mainnet:
-- MultiSig (stacksfort-v1): SP3TXKY0REKG6P3W6ACFB615N5556EC8VYS4MFA4D.stacksfort-v1
+The following contracts were deployed on Stacks mainnet on **Sat Jan 31 2026**:
+- **StacksFort Multisig**: `SP3TXKY0REKG6P3W6ACFB615N5556EC8VYS4MFA4D.stacksfort-multisig`
+- **StacksFort Token**: `SP3TXKY0REKG6P3W6ACFB615N5556EC8VYS4MFA4D.stacksfort-token`
 
 
 To deploy to testnet:

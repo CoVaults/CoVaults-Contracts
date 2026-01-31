@@ -4,7 +4,7 @@
 ;; Clarity Version: 3 (local dev) / 4 (planned for mainnet)
 ;; Clarity 4 Features: See CLARITY4-IMPLEMENTATION-PLAN.md for planned features:
 ;;   - restrict-assets? (Issue #7) - Post-conditions for token transfers
-;;   - stacks-block-time (Issue #15) - Transaction expiration
+;;   - block-height (Issue #15) - Transaction expiration
 ;;   - contract-hash? (Issue #7) - Token contract verification
 ;;   - to-ascii? (Issues #2, #6, #7) - Enhanced logging
 
@@ -43,7 +43,7 @@
 (define-constant CONTRACT_OWNER 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)
 (define-constant MAX_SIGNERS u100)
 (define-constant MIN_SIGNATURES_REQUIRED u1)
-(define-constant DEFAULT_EXPIRATION_WINDOW u604800) ;; 7 days in seconds
+(define-constant DEFAULT_EXPIRATION_WINDOW u1008) ;; ~7 days in blocks (144 blocks/day)
 
 ;; Transaction Types
 (define-constant TX_TYPE_STX u0)
@@ -200,7 +200,7 @@
             ;; Get current txn-id from storage
             (let (
                 (current-id (var-get txn-id))
-                (expiry-time (default-to (+ stacks-block-time DEFAULT_EXPIRATION_WINDOW) expiration))
+                (expiry-time (default-to (+ block-height DEFAULT_EXPIRATION_WINDOW) expiration))
             )
                 ;; Store transaction in transactions map
                 (map-set transactions current-id {
@@ -249,7 +249,7 @@
 
             (let (
                 (current-id (var-get txn-id))
-                (expiry-time (default-to (+ stacks-block-time DEFAULT_EXPIRATION_WINDOW) expiration))
+                (expiry-time (default-to (+ block-height DEFAULT_EXPIRATION_WINDOW) expiration))
             )
                 (map-set transactions current-id {
                     type: TX_TYPE_CONFIG,
@@ -375,7 +375,7 @@
             (asserts! (not (get executed txn)) ERR_TX_ALREADY_EXECUTED)
 
             ;; Verify transaction has not expired
-            (asserts! (< stacks-block-time (get expiration txn)) ERR_TX_EXPIRED)
+            (asserts! (< block-height (get expiration txn)) ERR_TX_EXPIRED)
 
             ;; Verify signatures list length >= threshold
             (asserts! (>= (len signatures) (var-get threshold)) ERR_EXEC_INSUFFICIENT_SIGNATURES)
@@ -465,7 +465,7 @@
             (asserts! (not (get executed txn)) ERR_TX_ALREADY_EXECUTED)
 
             ;; Verify transaction has not expired
-            (asserts! (< stacks-block-time (get expiration txn)) ERR_TX_EXPIRED)
+            (asserts! (< block-height (get expiration txn)) ERR_TX_EXPIRED)
 
             ;; Verify signatures list length >= threshold
             (asserts! (>= (len signatures) (var-get threshold)) ERR_EXEC_INSUFFICIENT_SIGNATURES)
@@ -538,7 +538,7 @@
         )
             (asserts! (is-eq (get type txn) TX_TYPE_CONFIG) ERR_VAL_INVALID_TXN_TYPE)
             (asserts! (not (get executed txn)) ERR_TX_ALREADY_EXECUTED)
-            (asserts! (< stacks-block-time (get expiration txn)) ERR_TX_EXPIRED)
+            (asserts! (< block-height (get expiration txn)) ERR_TX_EXPIRED)
 
             (let (
                 (txn-hash (unwrap! (hash-txn target-id) ERR_VAL_INVALID_TXN_ID))

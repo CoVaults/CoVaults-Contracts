@@ -10,7 +10,6 @@
 
 ;; Error constants
 (define-constant ERR_UNAUTHORIZED (err u1))
-(define-constant ERR_INSUFFICIENT_BALANCE (err u2))
 
 ;; SIP-010 Standard Functions
 
@@ -24,8 +23,10 @@
     (begin
         ;; Verify sender is tx-sender
         (asserts! (is-eq tx-sender sender) ERR_UNAUTHORIZED)
+        (asserts! (> amount u0) (err u3))
         ;; Execute transfer
         (try! (ft-transfer? mock-token amount sender recipient))
+        (match memo to-print (print to-print) 0x)
         (ok true)
     )
 )
@@ -67,6 +68,7 @@
 ;; Mint tokens to a recipient (for testing only)
 (define-public (mint (amount uint) (recipient principal))
     (begin
+        (asserts! (> amount u0) (err u3))
         (try! (ft-mint? mock-token amount recipient))
         (ok true)
     )

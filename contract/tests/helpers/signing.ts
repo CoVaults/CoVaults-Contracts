@@ -15,20 +15,26 @@ export function makeRandomSigner(): Signer {
 export function initMultisigWithSigners(signers: string[], threshold: number = 1) {
   const signerList = Cl.list(signers.map((addr) => Cl.principal(addr)));
   const thresholdValue = Cl.uint(threshold);
-  return simnet.callPublicFn("multisig", "initialize", [signerList, thresholdValue], simnet.deployer);
+  return simnet.callPublicFn("stacksfort-multisig", "initialize", [signerList, thresholdValue], simnet.deployer);
 }
 
-export function submitStxTxn(sender: string, amount: number = 100) {
+export function submitStxTxn(sender: string, amount: number = 100, expiration: number | null = null) {
   return simnet.callPublicFn(
-    "multisig",
+    "stacksfort-multisig",
     "submit-txn",
-    [Cl.uint(0), Cl.uint(amount), Cl.principal(sender), Cl.none()],
+    [
+      Cl.uint(0), 
+      Cl.uint(amount), 
+      Cl.principal(sender), 
+      Cl.none(), 
+      expiration ? Cl.some(Cl.uint(expiration)) : Cl.none()
+    ],
     sender,
   );
 }
 
 export function getTxnHash(txnId: number, sender: string) {
-  return simnet.callReadOnlyFn("multisig", "hash-txn", [Cl.uint(txnId)], sender);
+  return simnet.callReadOnlyFn("stacksfort-multisig", "hash-txn", [Cl.uint(txnId)], sender);
 }
 
 export function signHash(hashHex: string, privateKey: string) {
@@ -47,7 +53,7 @@ export function countUniqueValidSignatures(txnId: number, signatures: string[]) 
   const signatureList = Cl.list(signatures.map((signature) => Cl.bufferFromHex(signature)));
 
   return simnet.callPublicFn(
-    "multisig",
+    "stacksfort-multisig",
     "count-unique-valid-signatures",
     [Cl.uint(txnId), signatureList],
     simnet.deployer,
@@ -57,7 +63,7 @@ export function countUniqueValidSignatures(txnId: number, signatures: string[]) 
 export function executeStxTransfer(txnId: number, signatures: string[], caller: string) {
     const signatureList = Cl.list(signatures.map((signature) => Cl.bufferFromHex(signature)));
     return simnet.callPublicFn(
-        "multisig",
+        "stacksfort-multisig",
         "execute-stx-transfer-txn",
         [Cl.uint(txnId), signatureList],
         caller
@@ -73,26 +79,32 @@ export function getStxBalance(address: string): number {
 export function fundMultisigWithStx(amount: number) {
     // In simnet, we can't easily "mint" STX to a contract, but we can transfer from deployer
     // deployer usually has infinite/large STX
-    const contractPrincipal = `${simnet.deployer}.multisig`;
+    const contractPrincipal = `${simnet.deployer}.stacksfort-multisig`;
     return simnet.transferSTX((amount * 1000000), contractPrincipal, simnet.deployer);
 }
 
 export function executeTokenTransfer(txnId: number, signatures: string[], tokenContract: string, caller: string) {
     const signatureList = Cl.list(signatures.map((signature) => Cl.bufferFromHex(signature)));
     return simnet.callPublicFn(
-        "multisig",
+        "stacksfort-multisig",
         "execute-token-transfer-txn",
         [Cl.uint(txnId), signatureList, Cl.contractPrincipal(simnet.deployer, tokenContract)],
         caller
     );
 }
 
-export function submitTokenTxn(sender: string, tokenContract: string, amount: number = 100) {
+export function submitTokenTxn(sender: string, tokenContract: string, amount: number = 100, expiration: number | null = null) {
   // Type 1 = SIP-010 Transfer
   return simnet.callPublicFn(
-    "multisig",
+    "stacksfort-multisig",
     "submit-txn",
-    [Cl.uint(1), Cl.uint(amount), Cl.principal(sender), Cl.some(Cl.contractPrincipal(simnet.deployer, tokenContract))],
+    [
+      Cl.uint(1), 
+      Cl.uint(amount), 
+      Cl.principal(sender), 
+      Cl.some(Cl.contractPrincipal(simnet.deployer, tokenContract)), 
+      expiration ? Cl.some(Cl.uint(expiration)) : Cl.none()
+    ],
     sender,
   );
 }
