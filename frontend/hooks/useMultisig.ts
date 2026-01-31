@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
+  deserializeCV,
+  serializeCV,
   fetchCallReadOnlyFunction,
   makeContractCall,
   broadcastTransaction,
@@ -543,39 +545,85 @@ export function useMultisig(contractAddress?: string, contractName?: string) {
    */
   const fetchMultisigState = useCallback(async () => {
     try {
-      // This would need to be implemented based on contract read-only functions
-      // For now, returning a placeholder
-      // In a real implementation, you'd call contract read-only functions to get:
-      // - initialized status
-      // - signers list
-      // - threshold
-      // - next transaction ID
+      const apiUrl = wallet.network === "mainnet" ? "https://api.hiro.so" : "https://api.testnet.hiro.so";
       
+      const fetchDataVar = async (varName: string) => {
+        const response = await fetch(
+          `${apiUrl}/v2/contracts/data-var/${address}/${name}/${varName}`
+        );
+        const data = await response.json();
+        return data.data; 
+      };
+
+      const [initializedHex, signersHex, thresholdHex, txnIdHex] = await Promise.all([
+        fetchDataVar("initialized"),
+        fetchDataVar("signers"),
+        fetchDataVar("threshold"),
+        fetchDataVar("txn-id"),
+      ]);
+
+      const initialized = cvToValue(deserializeCV(initializedHex));
+      const signers = cvToValue(deserializeCV(signersHex)).map((s: any) => s.value || s); 
+      // cvToValue for list returns array of values. For principalCV, it might be the string directly or object depending on version.
+      // Usually strings for principals.
+      
+      const threshold = Number(cvToValue(deserializeCV(thresholdHex)));
+      const nextTxnId = Number(cvToValue(deserializeCV(txnIdHex)));
+
       setMultisigState({
-        initialized: true,
-        signers: [],
-        threshold: 2,
-        nextTxnId: 0,
+        initialized,
+        signers,
+        threshold,
+        nextTxnId,
       });
     } catch (err) {
       console.error("Error fetching multisig state:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch multisig state");
     }
-  }, []);
+  }, [address, name, getNetwork]);
 
   /**
    * Fetch transactions from contract
    */
   const fetchTransactions = useCallback(async () => {
     try {
-      // This would fetch all transactions from the contract
-      // For now, returning empty array
-      setTransactions([]);
+      if (!multisigState) return;
+      const apiUrl = wallet.network === "mainnet" ? "https://api.hiro.so" : "https://api.testnet.hiro.so";
+      
+      const txs: Transaction[] = [];
+      
+      // Fetch in reverse order (newest first)
+      for (let i = multisigState.nextTxnId - 1; i >= 0; i--) {
+        // Prepare map key
+        const key = uintCV(i);
+        const keyHex = `0x${Buffer.from(serializeCV(key)).toString("hex")}`;
+        
+        const response = await fetch(`${apiUrl}/v2/map_entry/${address}/${name}/transactions`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(keyHex)
+        });
+        
+        const data = await response.json();
+        if (data.data) {
+            const txnVal = cvToValue(deserializeCV(data.data));
+            txs.push({
+                id: i,
+                type: Number(txnVal.type),
+                amount: BigInt(txnVal.amount),
+                recipient: txnVal.recipient,
+                token: txnVal.token ? txnVal.token.value : null, // Handle optional
+                executed: txnVal.executed
+            });
+        }
+      }
+      
+      setTransactions(txs);
     } catch (err) {
       console.error("Error fetching transactions:", err);
-      setError(err instanceof Error ? err.message : "Failed to fetch transactions");
+      // Don't set global error here to avoid blocking UI if just one fetch fails
     }
-  }, []);
+  }, [address, name, getNetwork, multisigState]);
 
   // Auto-fetch state when wallet connects
   useEffect(() => {
