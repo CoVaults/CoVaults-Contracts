@@ -18,11 +18,17 @@ export function initMultisigWithSigners(signers: string[], threshold: number = 1
   return simnet.callPublicFn("multisig", "initialize", [signerList, thresholdValue], simnet.deployer);
 }
 
-export function submitStxTxn(sender: string, amount: number = 100) {
+export function submitStxTxn(sender: string, amount: number = 100, expiration: number | null = null) {
   return simnet.callPublicFn(
     "multisig",
     "submit-txn",
-    [Cl.uint(0), Cl.uint(amount), Cl.principal(sender), Cl.none()],
+    [
+      Cl.uint(0), 
+      Cl.uint(amount), 
+      Cl.principal(sender), 
+      Cl.none(), 
+      expiration ? Cl.some(Cl.uint(expiration)) : Cl.none()
+    ],
     sender,
   );
 }
@@ -87,12 +93,18 @@ export function executeTokenTransfer(txnId: number, signatures: string[], tokenC
     );
 }
 
-export function submitTokenTxn(sender: string, tokenContract: string, amount: number = 100) {
+export function submitTokenTxn(sender: string, tokenContract: string, amount: number = 100, expiration: number | null = null) {
   // Type 1 = SIP-010 Transfer
   return simnet.callPublicFn(
     "multisig",
     "submit-txn",
-    [Cl.uint(1), Cl.uint(amount), Cl.principal(sender), Cl.some(Cl.contractPrincipal(simnet.deployer, tokenContract))],
+    [
+      Cl.uint(1), 
+      Cl.uint(amount), 
+      Cl.principal(sender), 
+      Cl.some(Cl.contractPrincipal(simnet.deployer, tokenContract)), 
+      expiration ? Cl.some(Cl.uint(expiration)) : Cl.none()
+    ],
     sender,
   );
 }
