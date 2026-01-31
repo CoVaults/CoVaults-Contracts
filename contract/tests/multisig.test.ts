@@ -24,22 +24,22 @@ const deployer = accounts.get("deployer")!;
 describe("Issue #0: Contract Setup & Structure", () => {
   describe("Storage Variables Initialization", () => {
     it("should initialize 'initialized' variable to false", () => {
-      const initialized = simnet.getDataVar("stacksfort-multisig", "initialized");
+      const initialized = simnet.getDataVar("stacksfort-multisig-fix", "initialized");
       expect(initialized).toBeBool(false);
     });
 
     it("should initialize 'signers' variable to empty list", () => {
-      const signers = simnet.getDataVar("stacksfort-multisig", "signers");
+      const signers = simnet.getDataVar("stacksfort-multisig-fix", "signers");
       expect(signers).toBeList([]);
     });
 
     it("should initialize 'threshold' variable to 0", () => {
-      const threshold = simnet.getDataVar("stacksfort-multisig", "threshold");
+      const threshold = simnet.getDataVar("stacksfort-multisig-fix", "threshold");
       expect(threshold).toBeUint(0);
     });
 
     it("should initialize 'txn-id' variable to 0", () => {
-      const txnId = simnet.getDataVar("stacksfort-multisig", "txn-id");
+      const txnId = simnet.getDataVar("stacksfort-multisig-fix", "txn-id");
       expect(txnId).toBeUint(0);
     });
   });
@@ -47,14 +47,14 @@ describe("Issue #0: Contract Setup & Structure", () => {
   describe("Maps Definition", () => {
     it("should have 'transactions' map defined", () => {
       expect(() => {
-        simnet.getMapEntry("stacksfort-multisig", "transactions", Cl.uint(0));
+        simnet.getMapEntry("stacksfort-multisig-fix", "transactions", Cl.uint(0));
       }).toThrow("value not found");
     });
 
     it("should have 'txn-signers' map defined", () => {
       expect(() => {
         simnet.getMapEntry(
-          "stacksfort-multisig",
+          "stacksfort-multisig-fix",
           "txn-signers",
           Cl.tuple({
             "txn-id": Cl.uint(0),
@@ -82,7 +82,7 @@ describe("Issue #2: submit-txn function", () => {
 
     expect(result.result).toBeOk(Cl.uint(0));
 
-    const txnResult = simnet.getMapEntry("stacksfort-multisig", "transactions", Cl.uint(0));
+    const txnResult = simnet.getMapEntry("stacksfort-multisig-fix", "transactions", Cl.uint(0));
     expect(txnResult).toBeSome(
       Cl.tuple({
         type: Cl.uint(0),
@@ -96,7 +96,7 @@ describe("Issue #2: submit-txn function", () => {
       })
     );
 
-    const txnId = simnet.getDataVar("stacksfort-multisig", "txn-id");
+    const txnId = simnet.getDataVar("stacksfort-multisig-fix", "txn-id");
     expect(txnId).toBeUint(1);
   });
 
@@ -118,14 +118,14 @@ describe("Issue #2: submit-txn function", () => {
     const result2 = submitStxTxn(signer1.address, 500);
     expect(result2.result).toBeOk(Cl.uint(1));
 
-    const txn0 = simnet.getMapEntry("stacksfort-multisig", "transactions", Cl.uint(0));
-    const txn1 = simnet.getMapEntry("stacksfort-multisig", "transactions", Cl.uint(1));
+    const txn0 = simnet.getMapEntry("stacksfort-multisig-fix", "transactions", Cl.uint(0));
+    const txn1 = simnet.getMapEntry("stacksfort-multisig-fix", "transactions", Cl.uint(1));
 
     expect(txn0).toBeDefined();
     expect(txn1).toBeDefined();
     expect(txn0).not.toEqual(txn1);
 
-    const txnId = simnet.getDataVar("stacksfort-multisig", "txn-id");
+    const txnId = simnet.getDataVar("stacksfort-multisig-fix", "txn-id");
     expect(txnId).toBeUint(2);
   });
 });
@@ -176,7 +176,7 @@ describe("Issue #4: extract-signer function", () => {
     const signature = signHash(hashHex, signer.privateKey);
 
     const extractResult = simnet.callReadOnlyFn(
-      "stacksfort-multisig",
+      "stacksfort-multisig-fix",
       "extract-signer",
       [Cl.bufferFromHex(hashHex), Cl.bufferFromHex(signature)],
       signer.address
@@ -197,7 +197,7 @@ describe("Issue #4: extract-signer function", () => {
     const outsiderSig = signHash(hashHex, outsider.privateKey);
 
     const extractResult = simnet.callReadOnlyFn(
-      "stacksfort-multisig",
+      "stacksfort-multisig-fix",
       "extract-signer",
       [Cl.bufferFromHex(hashHex), Cl.bufferFromHex(outsiderSig)],
       signer.address
@@ -217,7 +217,7 @@ describe("Issue #4: extract-signer function", () => {
     const badSignature = "00".repeat(65);
 
     const extractResult = simnet.callReadOnlyFn(
-      "stacksfort-multisig",
+      "stacksfort-multisig-fix",
       "extract-signer",
       [Cl.bufferFromHex(hashHex), Cl.bufferFromHex(badSignature)],
       signer.address
@@ -290,7 +290,7 @@ describe("Issue #10: Signature Verification Tests", () => {
     
     // Verify this signature works with extract-signer
     const extractResult = simnet.callReadOnlyFn(
-      "stacksfort-multisig",
+      "stacksfort-multisig-fix",
       "extract-signer",
       [Cl.bufferFromHex(hashHex), Cl.bufferFromHex(sig)],
       signer1.address
@@ -328,7 +328,7 @@ describe("Issue #11: STX Transfer Execution Tests", () => {
     expect(executeResult.result).toBeOk(Cl.bool(true));
     
     // 5. Verify executed flag
-    const txnResult = simnet.getMapEntry("stacksfort-multisig", "transactions", Cl.uint(0));
+    const txnResult = simnet.getMapEntry("stacksfort-multisig-fix", "transactions", Cl.uint(0));
     expect(txnResult).toBeSome(
       Cl.tuple({
         type: Cl.uint(0),
@@ -345,7 +345,7 @@ describe("Issue #11: STX Transfer Execution Tests", () => {
 
   it("should update balances correctly after execution", () => {
     const amount = 2000;
-    const contractPrincipal = `${deployer}.stacksfort-multisig`;
+    const contractPrincipal = `${deployer}.stacksfort-multisig-fix`;
     // const initialContractBalance = getStxBalance(contractPrincipal);
     
     submitStxTxn(signer1.address, amount);
@@ -434,7 +434,7 @@ describe("Issue #12: SIP-010 Transfer Execution Tests", () => {
   beforeEach(() => {
     initMultisigWithSigners([signer1.address, signer2.address], 2);
     // Mint 10,000 mock tokens to the multisig contract
-    const contractPrincipal = `${deployer}.stacksfort-multisig`;
+    const contractPrincipal = `${deployer}.stacksfort-multisig-fix`;
     mintMockToken(tokenContract, contractPrincipal, 10000);
   });
 
@@ -453,7 +453,7 @@ describe("Issue #12: SIP-010 Transfer Execution Tests", () => {
     const sig2 = signHash(hashHex, signer2.privateKey);
     
     // 4. Verify initial balance
-    const contractPrincipal = `${deployer}.stacksfort-multisig`;
+    const contractPrincipal = `${deployer}.stacksfort-multisig-fix`;
     const initialBalance = getTokenBalance(tokenContract, contractPrincipal);
     expect(initialBalance.result).toBeOk(Cl.uint(10000));
     
@@ -462,7 +462,7 @@ describe("Issue #12: SIP-010 Transfer Execution Tests", () => {
     expect(executeResult.result).toBeOk(Cl.bool(true));
     
     // 6. Verify executed flag
-    const txnResult = simnet.getMapEntry("stacksfort-multisig", "transactions", Cl.uint(0));
+    const txnResult = simnet.getMapEntry("stacksfort-multisig-fix", "transactions", Cl.uint(0));
     expect(txnResult).toBeSome(
       Cl.tuple({
         type: Cl.uint(1), // Type 1 for token
@@ -500,11 +500,11 @@ describe("Issue #12: SIP-010 Transfer Execution Tests", () => {
     const sig2 = signHash(hashHex, signer2.privateKey);
     
     // Try to execute with a different token contract (e.g. self)
-    // Here we just pass "stacksfort-multisig" as if it were a token checking logic
+    // Here we just pass "stacksfort-multisig-fix" as if it were a token checking logic
     // The contract checks (contract-of token-contract) vs stored token
     // Stored: mock-token. Passed: multisig (or any random)
     
-    const executeResult = executeTokenTransfer(0, [sig1, sig2], "stacksfort-multisig", signer1.address);
+    const executeResult = executeTokenTransfer(0, [sig1, sig2], "stacksfort-multisig-fix", signer1.address);
     expect(executeResult.result).toBeErr(Cl.uint(303)); // ERR_INVALID_TOKEN
   });
 
@@ -584,7 +584,7 @@ describe("Issue #14: Reentrancy Protection", () => {
   });
 
   it("should initialize reentrancy-lock to false", () => {
-    const lock = simnet.getDataVar("stacksfort-multisig", "reentrancy-lock");
+    const lock = simnet.getDataVar("stacksfort-multisig-fix", "reentrancy-lock");
     expect(lock).toBeBool(false);
   });
 });

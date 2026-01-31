@@ -1,5 +1,5 @@
 export const DEPLOYER = "SP3TXKY0REKG6P3W6ACFB615N5556EC8VYS4MFA4D";
-export const MULTISIG_CONTRACT_NAME = "stacksfort-multisig";
+export const MULTISIG_CONTRACT_NAME = "stacksfort-multisig-fix";
 export const TOKEN_CONTRACT_NAME = "stacksfort-token";
 
 export const MULTISIG_CONTRACT_FULL = `${DEPLOYER}.${MULTISIG_CONTRACT_NAME}`;

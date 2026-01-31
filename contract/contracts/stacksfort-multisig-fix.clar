@@ -40,7 +40,7 @@
 ;; ============================================
 ;; Constants
 ;; ============================================
-(define-constant CONTRACT_OWNER 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)
+(define-constant CONTRACT_OWNER tx-sender)
 (define-constant MAX_SIGNERS u100)
 (define-constant MIN_SIGNATURES_REQUIRED u1)
 (define-constant DEFAULT_EXPIRATION_WINDOW u1008) ;; ~7 days in blocks (144 blocks/day)

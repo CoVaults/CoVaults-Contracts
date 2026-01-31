@@ -65,15 +65,17 @@ export function useStacksWallet() {
 
   const network: Network = useMemo(() => {
     if (!userData?.profile?.stxAddress) return "disconnected";
-    if (userData.profile.stxAddress.testnet) return "testnet";
+    // Prioritize Mainnet
     if (userData.profile.stxAddress.mainnet) return "mainnet";
+    if (userData.profile.stxAddress.testnet) return "testnet";
     return "disconnected";
   }, [userData]);
 
   const address = useMemo(() => {
     if (!userData?.profile?.stxAddress) return null;
+    // Prioritize Mainnet address
     return (
-      userData.profile.stxAddress.testnet || userData.profile.stxAddress.mainnet
+      userData.profile.stxAddress.mainnet || userData.profile.stxAddress.testnet
     );
   }, [userData]);
 

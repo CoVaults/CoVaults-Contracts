@@ -8,8 +8,8 @@ cache_dir = './.cache'
 [[project.requirements]]
 contract_id = 'SP3FBR2AGK5H9QBDH3EEN6DF8EK8JY7RX8QJ5SVTE.sip-010-trait-ft-standard'
 
-[contracts.stacksfort-multisig]
-path = 'contracts/stacksfort-multisig.clar'
+[contracts.stacksfort-multisig-fix]
+path = 'contracts/stacksfort-multisig-fix.clar'
 clarity_version = 2
 # Using Clarity 2 for stable multisig support with as-contract
 # Clarity 2 is well-tested for multisig patterns

@@ -29,7 +29,8 @@ type Props = {
 };
 
 export function NetworkBadge({ network }: Props) {
-  const variant = styles[network];
+  // Hardcode display to Mainnet as we are enforcing it
+  const variant = styles["mainnet"];
 
   return (
     <span

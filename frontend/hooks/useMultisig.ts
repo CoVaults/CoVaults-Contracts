@@ -60,13 +60,12 @@ export function useMultisig(contractAddress?: string, contractName?: string) {
   const address = contractAddress || CONTRACT_ADDRESS;
   const name = contractName || CONTRACT_NAME;
 
-  // Get network based on wallet connection
   const getNetwork = useCallback((): StacksNetwork => {
-    // Return appropriate network configuration
-    // This is a simplified version to fix build errors
+    // FORCE MAINNET configuration
+    // We ignore the wallet's network preference because contracts are only on Mainnet
     return {
-        version: wallet.network === "mainnet" ? 1 : 2147483648,
-        chainId: wallet.network === "mainnet" ? 1 : 2147483648,
+        version: 1, // Mainnet
+        chainId: 1, // Mainnet
         bnsLookupUrl: "https://api.hiro.so",
         broadcastEndpoint: "/v2/transactions",
         transferEndpoint: "/v2/transfer",
@@ -82,10 +81,10 @@ export function useMultisig(contractAddress?: string, contractName?: string) {
         getReadOnlyApiUrl: () => "https://api.hiro.so",
         getTokenApiUrl: () => "https://api.hiro.so",
         getTransactionApiUrl: () => "https://api.hiro.so",
-        isMainnet: () => wallet.network === "mainnet",
-        coreApiUrl: wallet.network === "mainnet" ? "https://api.hiro.so" : "https://api.testnet.hiro.so"
+        isMainnet: () => true,
+        coreApiUrl: "https://api.hiro.so"
     } as unknown as StacksNetwork;
-  }, [wallet.network]);
+  }, []);
 
   // ============================================
   // Read-only Functions
@@ -545,12 +544,17 @@ export function useMultisig(contractAddress?: string, contractName?: string) {
    */
   const fetchMultisigState = useCallback(async () => {
     try {
-      const apiUrl = wallet.network === "mainnet" ? "https://api.hiro.so" : "https://api.testnet.hiro.so";
+      const apiUrl = "https://api.hiro.so"; // FORCE MAINNET
       
       const fetchDataVar = async (varName: string) => {
         const response = await fetch(
           `${apiUrl}/v2/contracts/data-var/${address}/${name}/${varName}`
         );
+        if (!response.ok) {
+            // If 404, return null (handled below)
+            if (response.status === 404) return null;
+            throw new Error(`Failed to fetch ${varName}: ${response.statusText}`);
+        }
         const data = await response.json();
         return data.data; 
       };
@@ -561,6 +565,18 @@ export function useMultisig(contractAddress?: string, contractName?: string) {
         fetchDataVar("threshold"),
         fetchDataVar("txn-id"),
       ]);
+
+      // If any critical data is missing (contract not found), set default state
+      if (!initializedHex || !signersHex || !thresholdHex || !txnIdHex) {
+          console.warn("Contract data not found, assuming uninitialized or pending deployment.");
+          setMultisigState({
+            initialized: false,
+            signers: [],
+            threshold: 0,
+            nextTxnId: 0,
+          });
+          return;
+      }
 
       const initialized = cvToValue(deserializeCV(initializedHex));
       const signers = cvToValue(deserializeCV(signersHex)).map((s: any) => s.value || s); 
@@ -588,7 +604,7 @@ export function useMultisig(contractAddress?: string, contractName?: string) {
   const fetchTransactions = useCallback(async () => {
     try {
       if (!multisigState) return;
-      const apiUrl = wallet.network === "mainnet" ? "https://api.hiro.so" : "https://api.testnet.hiro.so";
+      const apiUrl = "https://api.hiro.so"; // FORCE MAINNET
       
       const txs: Transaction[] = [];
       
@@ -604,6 +620,11 @@ export function useMultisig(contractAddress?: string, contractName?: string) {
             body: JSON.stringify(keyHex)
         });
         
+        if (!response.ok) {
+            console.warn(`Failed to fetch transaction ${i}: ${response.statusText}`);
+            continue;
+        }
+
         const data = await response.json();
         if (data.data) {
             const txnVal = cvToValue(deserializeCV(data.data));

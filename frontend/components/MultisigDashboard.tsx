@@ -140,7 +140,7 @@ export function MultisigDashboard({ contractAddress, contractName = "multisig" }
       </div>
 
       {/* Signers List */}
-      <div className="rounded-2xl border border-white/5 bg-white/5 p-6">
+      <div id="signers" className="rounded-2xl border border-white/5 bg-white/5 p-6">
         <div className="mb-4 flex items-center justify-between">
           <div>
             <p className="text-sm uppercase tracking-[0.12em] text-slate-400">

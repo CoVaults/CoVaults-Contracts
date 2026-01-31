@@ -112,9 +112,9 @@ npm run test
 
 ### Mainnet Deployed Contracts
 
-The following contracts were deployed on Stacks mainnet on **Sat Jan 31 2026**:
-- **StacksFort Multisig**: `SP3TXKY0REKG6P3W6ACFB615N5556EC8VYS4MFA4D.stacksfort-multisig`
-- **StacksFort Token**: `SP3TXKY0REKG6P3W6ACFB615N5556EC8VYS4MFA4D.stacksfort-token`
+The following contracts were deployed on Stacks mainnet:
+- **StacksFort Multisig**: `SP3TXKY0REKG6P3W6ACFB615N5556EC8VYS4MFA4D.stacksfort-multisig-fix` (Deployed Sat Jan 31 2026)
+- **StacksFort Token**: `SP3TXKY0REKG6P3W6ACFB615N5556EC8VYS4MFA4D.stacksfort-token` (Deployed Sat Jan 31 2026)
 
 
 To deploy to testnet:
