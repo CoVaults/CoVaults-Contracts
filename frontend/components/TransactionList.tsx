@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useMultisig, TXN_TYPE_STX, TXN_TYPE_TOKEN } from "@/hooks/useMultisig";
 import type { Transaction } from "@/hooks/useMultisig";
+import { TransactionDetail } from "./TransactionDetail";
 
 type Props = {
   contractAddress: string;
@@ -66,9 +67,10 @@ const getStatusBadge = (executed: boolean) => {
 };
 
 export function TransactionList({ contractAddress, contractName = "multisig" }: Props) {
-  const { transactions, isLoading, error } = useMultisig(contractAddress, contractName);
+  const { transactions, isLoading, error, state } = useMultisig(contractAddress, contractName);
   const [filterStatus, setFilterStatus] = useState<FilterStatus>("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedTxn, setSelectedTxn] = useState<Transaction | null>(null);
 
   // Filter transactions
   const filteredTransactions = useMemo(() => {
@@ -262,6 +264,7 @@ export function TransactionList({ contractAddress, contractName = "multisig" }: 
                   {getStatusBadge(txn.executed)}
                   <button
                     type="button"
+                    onClick={() => setSelectedTxn(txn)}
                     className="rounded-lg border border-white/10 px-3 py-1.5 text-xs font-semibold text-slate-200 opacity-0 transition-all duration-150 hover:border-amber-300 hover:text-amber-200 group-hover:opacity-100"
                   >
                     View Details →
@@ -271,6 +274,18 @@ export function TransactionList({ contractAddress, contractName = "multisig" }: 
             </div>
           ))}
         </div>
+      )}
+
+      {/* Transaction Detail Modal */}
+      {selectedTxn && state && (
+        <TransactionDetail
+          transaction={selectedTxn}
+          contractAddress={contractAddress}
+          contractName={contractName}
+          threshold={state.threshold}
+          signers={state.signers}
+          onClose={() => setSelectedTxn(null)}
+        />
       )}
 
       {/* Pagination */}
