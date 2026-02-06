@@ -14,7 +14,6 @@
 ;; ============================================
 ;; Constants
 ;; ============================================
-(define-constant CONTRACT_OWNER tx-sender)
 (define-constant MAX_SIGNERS u100)
 (define-constant MIN_SIGNATURES_REQUIRED u1)
 (define-constant DEFAULT_EXPIRATION_WINDOW u1008) ;; ~7 days in blocks (144 blocks/day)
@@ -107,8 +106,6 @@
     (threshold-value uint)
 )
     (begin
-        ;; Verify contract owner
-        (asserts! (is-eq tx-sender CONTRACT_OWNER) ERR_AUTH_OWNER_ONLY)
         ;; Check initialization status (must be false)
         (asserts! (not (var-get initialized)) ERR_INIT_ALREADY_INITIALIZED)
         ;; Validate signers list length (max 100 using MAX_SIGNERS)
