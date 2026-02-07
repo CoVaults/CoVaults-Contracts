@@ -519,9 +519,14 @@ export function useMultisig(contractAddress?: string, contractName?: string) {
     try {
       const apiUrl = "https://api.hiro.so";
       const fetchDataVar = async (varName: string) => {
-        const response = await fetch(`${apiUrl}/v2/contracts/data-var/${address}/${name}/${varName}`);
+        const url = `${apiUrl}/v2/contracts/data-var/${address}/${name}/${varName}`;
+        console.log(`Fetching ${varName} from: ${url}`);
+        const response = await fetch(url);
         if (!response.ok) {
-            if (response.status === 404) return null;
+            if (response.status === 404) {
+              console.warn(`Data-var ${varName} not found at ${address}.${name}. Contract might not be deployed or name is wrong.`);
+              return null;
+            }
             throw new Error(`Failed to fetch ${varName}: ${response.statusText}`);
         }
         const data = await response.json();
@@ -536,6 +541,7 @@ export function useMultisig(contractAddress?: string, contractName?: string) {
       ]);
 
       if (!initializedHex || !signersHex || !thresholdHex || !txnIdHex) {
+          console.error("Missing multisig state components. Initialization might be incomplete.");
           setMultisigState({ initialized: false, signers: [], threshold: 0, nextTxnId: 0 });
           return;
       }
